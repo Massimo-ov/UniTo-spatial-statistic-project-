@@ -1,5 +1,6 @@
 # UniTo-spatial-statistic-project-
-Markdown project on variography and geostat data with Matteo Cucca **under supervison of Rosaria Ignaccolo, UniTo**
+Markdown project on variography and geostat data with Matteo Cucca **under supervison of course owner Rosaria Ignaccolo, UniTo**
+
 # Spatial Statistics Project — NO₂ Analysis in Piemonte  
 ### Educational university project (R Markdown)
 
