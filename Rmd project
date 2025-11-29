@@ -1,0 +1,68 @@
+setwd("C:/Users/inter/Desktop/statspaz")
+
+library(sp)
+NO2 <- read.csv("NO2.csv")
+no2 <- NO2
+
+confini <- read.table("confini_piemonte.txt", header = TRUE)
+
+no2$UTM_X <- no2$UTM_X * 1000
+no2$UTM_Y <- no2$UTM_Y * 1000
+
+library(ggplot2)
+library(sf)
+
+confini_sf <- st_as_sf(confini, coords = c("x", "y"), crs = 32632)
+confini_sf <- st_cast(st_combine(confini_sf), "POLYGON")
+
+no2_sf <- st_as_sf(no2, coords = c("UTM_X", "UTM_Y"), crs = 32632)
+
+ggplot() +
+  geom_sf(data = confini_sf, fill = "lightblue", color = "black", size = 0.5) +
+  geom_sf(data = no2_sf, color = "red", size = 2) +
+  theme_minimal() +
+  labs(title = "Mappa del Piemonte con Confini e Coordinate",
+       x = "Longitudine",
+       y = "Latitudine")
+
+coordinates(no2) <- c("UTM_X", "UTM_Y")
+plot(no2, main = "Siti spaziali")
+
+library(scatterplot3d)
+scatterplot3d(
+  no2$UTM_X/100, no2$UTM_Y/100, no2$NO2_OBS,
+  type = "h", highlight.3d = TRUE, pch = 20,
+  main = "NO2",
+  xlab = "UTM_X/100", ylab = "UTM_Y/100", zlab = "Concentrazione NO2"
+)
+
+par(mfrow = c(1, 2), pty = "s")
+hist(no2$NO2_OBS, freq = FALSE)
+lines(density(no2$NO2_OBS))
+hist(sqrt(no2$NO2_OBS), freq = FALSE)
+lines(density(sqrt(no2$NO2_OBS)))
+
+spplot(no2, "NO2_OBS", do.log = TRUE, colorkey = TRUE)
+spplot(no2, "NO2_OBS", do.log = FALSE, colorkey = TRUE)
+bubble(no2, "NO2_OBS", do.log = TRUE)
+
+dist <- dist(coordinates(no2), method = "euclidean")
+summary(dist)
+
+library(gstat)
+hscat(sqrt(NO2_OBS) ~ 1, no2, (0:9)*20000)
+
+cld <- variogram(sqrt(NO2_OBS) ~ 1, no2, cloud = TRUE)
+svgm <- variogram(sqrt(NO2_OBS) ~ 1, no2)
+
+plot(cld)
+plot(svgm, col = "red", pch = 10)
+
+v.fit <- fit.variogram(svgm, vgm(2, "Sph", 40000, 0.5))
+v.fit2 <- fit.variogram(svgm, vgm(2, "Exp", 20000, 0.5))
+
+plot(svgm, v.fit)
+plot(svgm, v.fit2)
+
+attr(v.fit, "SSErr")
+attr(v.fit2, "SSErr")
